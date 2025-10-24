@@ -10,7 +10,7 @@
             font-family: 'Comic Sans MS', 'Segoe UI', sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
-            padding: 8px;
+            padding: 4px;
         }
         .container {
             max-width: 1800px;
@@ -19,17 +19,17 @@
             border-radius: 12px;
             box-shadow: 0 15px 30px rgba(0,0,0,0.1);
             overflow: hidden;
-            height: calc(100vh - 16px);
+            height: calc(100vh - 8px);
             display: flex;
             flex-direction: column;
         }
         .header {
             background: linear-gradient(45deg, #4CAF50, #2196F3);
             color: white;
-            padding: 10px 15px;
+            padding: 6px 10px;
             text-align: center;
         }
-        .header h1 { font-size: 1.5em; margin-bottom: 3px; }
+        .header h1 { font-size: 1.2em; margin-bottom: 3px; }
         .header p { font-size: 0.85em; opacity: 0.9; }
         
         .main-content {
@@ -39,7 +39,7 @@
         }
         
         .blocks-panel {
-            width: 180px;
+            width: 160px;
             background: #f0f8ff;
             border-right: 2px solid #4CAF50;
             display: flex;
@@ -72,16 +72,15 @@
             background: white;
             border: 2px solid;
             border-radius: 6px;
-            padding: 5px 6px;
+            padding: 4px 5px;
             margin: 3px 0;
             cursor: grab;
             font-weight: bold;
-            font-size: 10px;
+            font-size: 9px;
             transition: transform 0.2s;
             user-select: none;
         }
         .block-palette:hover {
-            transform: scale(1.05);
         }
         .block-palette:active {
             cursor: grabbing;
@@ -103,7 +102,7 @@
         
         .controls {
             background: white;
-            padding: 8px;
+            padding: 5px;
             border-bottom: 2px solid #ddd;
             display: flex;
             gap: 6px;
@@ -112,7 +111,7 @@
         }
         
         .control-btn {
-            padding: 8px 16px;
+            padding: 6px 12px;
             border: none;
             border-radius: 6px;
             cursor: pointer;
@@ -126,7 +125,6 @@
         .control-btn.reset { background: linear-gradient(45deg, #2196F3, #64B5F6); }
         .control-btn.clear { background: linear-gradient(45deg, #f44336, #e57373); }
         .control-btn.challenges { background: linear-gradient(45deg, #9C27B0, #BA68C8); }
-        .control-btn:hover { transform: scale(1.05); }
         .control-btn:disabled {
             opacity: 0.5;
             cursor: not-allowed;
@@ -213,7 +211,7 @@
             flex-direction: column;
             background: #ffffff;
             border-right: 2px solid #ddd;
-            padding: 10px;
+            padding: 5px;
         }
         
         #robotCanvas {
@@ -330,18 +328,22 @@
         }
         
         .console-container {
-            background: #1e1e1e;
-            color: #00ff00;
-            padding: 8px;
-            height: 120px;
-            overflow-y: auto;
-            font-family: 'Courier New', monospace;
-            font-size: 11px;
+            background: #f0f0f0;
+            color: #333;
+            padding: 5px;
+            height: 30px;
+            overflow: hidden;
+            font-family: 'Comic Sans MS', sans-serif;
+            font-size: 14px;
+            font-weight: bold;
             border-top: 2px solid #4CAF50;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
         
         .console-line {
-            margin: 2px 0;
+            margin: 0;
         }
 
         .modal {
@@ -444,6 +446,35 @@
             font-size: 0.75em;
             margin-top: 8px;
             background: rgba(255,255,255,0.2);
+        .message-overlay {
+            display: none;
+            position: fixed;
+            z-index: 2000;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px 80px;
+            border-radius: 20px;
+            font-size: 3em;
+            font-weight: bold;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+            animation: popIn 0.3s ease-out;
+        }
+        
+        .message-overlay.success {
+            background: linear-gradient(135deg, #4CAF50 0%, #66BB6A 100%);
+        }
+        
+        .message-overlay.error {
+            background: linear-gradient(135deg, #f44336 0%, #e57373 100%);
+        }
+        
+        @keyframes popIn {
+            0% { transform: translate(-50%, -50%) scale(0); }
+            100% { transform: translate(-50%, -50%) scale(1); }
+        }
         }
 
         .challenge-info {
@@ -578,7 +609,7 @@
                 
                 <div class="workspace-container">
                     <div class="canvas-container">
-                        <canvas id="robotCanvas" width="1000" height="600"></canvas>
+                        <canvas id="robotCanvas" width="1050" height="600"></canvas>
                     </div>
                     
                     <div class="assembly-area" id="workspace">
@@ -587,7 +618,7 @@
                 </div>
                 
                 <div class="console-container" id="console">
-                    <div class="console-line">🤖 Sistema iniciado...</div>
+                    <div class="console-line"></div>
                 </div>
             </div>
         </div>
@@ -700,7 +731,7 @@
                 ctx.fillRect(robot.startPoint.x * robot.cellSize, robot.startPoint.y * robot.cellSize,
                            robot.cellSize, robot.cellSize);
                 ctx.fillStyle = '#4CAF50';
-                ctx.font = 'bold 20px Arial';
+                ctx.font = 'bold 16px Arial';
                 ctx.textAlign = 'center';
                 ctx.textBaseline = 'middle';
                 ctx.fillText('S', robot.startPoint.x * robot.cellSize + robot.cellSize/2,
@@ -712,11 +743,23 @@
                 ctx.fillRect(robot.goalPoint.x * robot.cellSize, robot.goalPoint.y * robot.cellSize,
                            robot.cellSize, robot.cellSize);
                 ctx.fillStyle = '#FF9800';
-                ctx.font = 'bold 20px Arial';
+                ctx.font = 'bold 16px Arial';
                 ctx.textAlign = 'center';
                 ctx.textBaseline = 'middle';
                 ctx.fillText('M', robot.goalPoint.x * robot.cellSize + robot.cellSize/2,
                            robot.goalPoint.y * robot.cellSize + robot.cellSize/2);
+            }
+            
+            if (state.currentChallenge && state.currentChallenge.setup.targetImage) {
+                ctx.strokeStyle = '#2196F3';
+                ctx.lineWidth = 3;
+                ctx.setLineDash([5, 5]);
+                state.currentChallenge.setup.targetImage.forEach(pos => {
+                    const [x, y] = pos.split(',').map(Number);
+                    ctx.strokeRect(x * robot.cellSize + 2, y * robot.cellSize + 2, 
+                                 robot.cellSize - 4, robot.cellSize - 4);
+                });
+                ctx.setLineDash([]);
             }
             
             const centerX = robot.x * robot.cellSize + robot.cellSize / 2;
@@ -794,10 +837,10 @@
                     block.innerHTML = '⬇️ RETROCEDER <input type="number" class="block-input" value="1" min="1" max="20">';
                     break;
                 case 'GIRAR_DERECHA':
-                    block.innerHTML = '↪️ GIRAR → <input type="number" class="block-input" value="1" min="1" max="4"> veces';
+                    block.innerHTML = '↱ GIRAR DERECHA <input type="number" class="block-input" value="1" min="1" max="4"> veces';
                     break;
                 case 'GIRAR_IZQUIERDA':
-                    block.innerHTML = '↩️ GIRAR ← <input type="number" class="block-input" value="1" min="1" max="4"> veces';
+                    block.innerHTML = '↰ GIRAR IZQUIERDA <input type="number" class="block-input" value="1" min="1" max="4"> veces';
                     break;
                 case 'PINTAR':
                     block.innerHTML = '🎨 PINTAR <select class="block-select"><option value="red">Rojo</option><option value="blue">Azul</option><option value="green">Verde</option><option value="yellow">Amarillo</option><option value="purple">Púrpura</option><option value="orange">Naranja</option></select>';
@@ -829,6 +872,18 @@
             
             block.appendChild(deleteBtn);
             workspace.appendChild(block);
+            
+            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            oscillator.frequency.value = 800;
+            oscillator.type = 'sine';
+            gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.1);
+            oscillator.start(audioContext.currentTime);
+            oscillator.stop(audioContext.currentTime + 0.1);
             
             block.addEventListener('dragstart', (e) => {
                 e.dataTransfer.effectAllowed = 'move';
@@ -902,16 +957,41 @@
             const speed = 11 - parseInt(document.getElementById('speedSlider').value);
             const delay = speed * 100;
             
-            log('▶️ Ejecutando programa...');
+            log('');
             
             try {
+                robot.x = robot.startPoint.x;
+                robot.y = robot.startPoint.y;
+                robot.direction = 0;
+                robot.trail.clear();
                 state.flatProgram = buildFlatProgram();
                 await executeProgram(delay);
                 
-                log('✅ Programa finalizado');
+                log('');
                 
-                if (state.currentChallenge) {
-                    checkChallengeCompletion();
+                if (robot.goalPoint) {
+                    if (robot.x === robot.goalPoint.x && robot.y === robot.goalPoint.y) {
+                        showMessage('¡LOGRADO!', true);
+                        if (state.currentChallenge) {
+                            state.completedChallenges.add(state.currentChallenge.id);
+                            localStorage.setItem('completedChallenges', 
+                                JSON.stringify(Array.from(state.completedChallenges)));
+                            setTimeout(() => {
+                                if (confirm(`¡Felicidades! ¿Quieres intentar el siguiente reto?`)) {
+                                    const nextChallenge = challenges.find(c => 
+                                        c.id === state.currentChallenge.id + 1
+                                    );
+                                    if (nextChallenge) {
+                                        loadChallenge(nextChallenge);
+                                    } else {
+                                        alert('¡Has completado todos los retos! 🏆');
+                                    }
+                                }
+                            }, 2500);
+                        }
+                    } else {
+                        showMessage('ERROR', false);
+                    }
                 }
             } catch (error) {
                 log('❌ Error: ' + error.message);
@@ -953,7 +1033,7 @@
             state.flatProgram = buildFlatProgram();
             
             document.getElementById('nextStepBtn').disabled = false;
-            log('⏯️ Modo paso a paso activado');
+            log('');
             
             if (state.flatProgram.length > 0) {
                 state.flatProgram[0].block.classList.add('executing');
@@ -966,7 +1046,7 @@
                 state.stepMode = false;
                 document.getElementById('nextStepBtn').disabled = true;
                 state.flatProgram.forEach(inst => inst.block.classList.remove('executing'));
-                log('✅ Programa finalizado');
+                log('');
                 
                 if (state.currentChallenge) {
                     checkChallengeCompletion();
@@ -1228,9 +1308,10 @@
         }
         
         function clearProgram() {
-            if (confirm('¿Borrar todos los bloques?')) {
+            if (confirm('⚠️ Esto borrará todos los bloques y devolverá el robot al punto de inicio. ¿Continuar?')) {
                 workspace.innerHTML = '<div class="assembly-title">📝 MI PROGRAMA</div>';
-                log('🗑 Programa limpiado');
+                resetRobot();
+                log('');
             }
         }
         
@@ -1385,274 +1466,423 @@
         const challenges = [
             {
                 id: 1,
-                name: "Primer Paso",
+                name: "Camino Recto",
                 difficulty: "Fácil",
-                description: "Mueve el robot 3 pasos hacia adelante",
-                hint: "Usa el bloque AVANZAR con valor 3",
+                description: "Llega a la meta avanzando",
                 setup: {
                     walls: [],
-                    start: {x: 12, y: 10},
-                    goal: {x: 12, y: 7}
+                    start: {x: 10, y: 7},
+                    goal: {x: 14, y: 7}
                 },
-                checkSuccess: () => robot.y === 7
+                checkSuccess: () => robot.x === 14 && robot.y === 7
             },
             {
                 id: 2,
-                name: "Giro Simple",
+                name: "Esquina Simple",
                 difficulty: "Fácil",
-                description: "Avanza 2 pasos, gira a la derecha y avanza 2 más",
-                hint: "Usa AVANZAR, GIRAR DERECHA, AVANZAR",
+                description: "Gira y llega a la meta",
                 setup: {
-                    walls: [],
+                    walls: ["12,6", "13,6", "14,6"],
                     start: {x: 10, y: 7},
-                    goal: {x: 12, y: 5}
+                    goal: {x: 14, y: 4}
                 },
-                checkSuccess: () => robot.x === 12 && robot.y === 5
+                checkSuccess: () => robot.x === 14 && robot.y === 4
             },
             {
                 id: 3,
-                name: "Pintor Básico",
+                name: "Muro Central",
                 difficulty: "Fácil",
-                description: "Avanza 3 pasos pintando cada casilla",
-                hint: "PINTAR, AVANZAR 3, NO PINTAR",
+                description: "Rodea el muro para llegar",
                 setup: {
-                    walls: [],
-                    start: {x: 12, y: 7},
-                    goal: null
-                },
-                checkSuccess: () => robot.trail.size >= 4
-            },
-            {
-                id: 4,
-                name: "Cuadrado Simple",
-                difficulty: "Fácil",
-                description: "Dibuja un cuadrado de 3x3",
-                hint: "REPETIR 4: AVANZAR 3, GIRAR DERECHA, FIN REPETIR",
-                setup: {
-                    walls: [],
-                    start: {x: 12, y: 7},
-                    goal: null
-                },
-                checkSuccess: () => robot.x === 12 && robot.y === 7 && robot.direction === 0
-            },
-            {
-                id: 5,
-                name: "Esquivar Obstáculo",
-                difficulty: "Fácil",
-                description: "Llega a la meta esquivando el muro",
-                hint: "Rodea el muro por la derecha",
-                setup: {
-                    walls: ["12,6"],
-                    start: {x: 12, y: 8},
-                    goal: {x: 12, y: 4}
-                },
-                checkSuccess: () => robot.x === 12 && robot.y === 4
-            },
-            {
-                id: 6,
-                name: "L Invertida",
-                difficulty: "Fácil",
-                description: "Dibuja una L invertida avanzando y girando",
-                hint: "Avanza, gira izquierda, avanza",
-                setup: {
-                    walls: [],
-                    start: {x: 15, y: 10},
-                    goal: {x: 10, y: 7}
-                },
-                checkSuccess: () => robot.x === 10 && robot.y === 7
-            },
-            {
-                id: 7,
-                name: "Línea de Colores",
-                difficulty: "Fácil",
-                description: "Pinta una línea de 5 casillas",
-                hint: "PINTAR, AVANZAR 5, NO PINTAR",
-                setup: {
-                    walls: [],
+                    walls: ["12,7", "12,6", "12,5"],
                     start: {x: 10, y: 7},
-                    goal: null
-                },
-                checkSuccess: () => robot.trail.size >= 5
-            },
-            {
-                id: 8,
-                name: "Laberinto en U",
-                difficulty: "Medio",
-                description: "Navega el laberinto en forma de U hasta la meta",
-                hint: "Sigue el camino: adelante, derecha, adelante, derecha, adelante",
-                setup: {
-                    walls: ["11,5", "11,6", "11,7", "11,8", "11,9", "13,5", "13,6", "13,7", "13,8", "13,9"],
-                    start: {x: 12, y: 10},
-                    goal: {x: 12, y: 4}
-                },
-                checkSuccess: () => robot.x === 12 && robot.y === 4
-            },
-            {
-                id: 9,
-                name: "Rectángulo Perfecto",
-                difficulty: "Medio",
-                description: "Dibuja un rectángulo de 5x3",
-                hint: "Repite: avanza 5, gira, avanza 3, gira",
-                setup: {
-                    walls: [],
-                    start: {x: 10, y: 6},
-                    goal: null
-                },
-                checkSuccess: () => robot.x === 10 && robot.y === 6 && robot.direction === 0
-            },
-            {
-                id: 10,
-                name: "Condicional Básico",
-                difficulty: "Medio",
-                description: "Usa SI para avanzar solo cuando no hay muro",
-                hint: "REPETIR 10: SI NO_HAY_MURO: AVANZAR, FIN SI, FIN REPETIR",
-                setup: {
-                    walls: ["12,6", "12,4"],
-                    start: {x: 12, y: 8},
-                    goal: {x: 12, y: 3}
-                },
-                checkSuccess: () => robot.y <= 3
-            },
-            {
-                id: 11,
-                name: "Escalera",
-                difficulty: "Medio",
-                description: "Crea una escalera",
-                hint: "REPETIR: PINTAR, AVANZAR, GIRAR DERECHA, AVANZAR, GIRAR IZQUIERDA",
-                setup: {
-                    walls: [],
-                    start: {x: 8, y: 10},
-                    goal: null
-                },
-                checkSuccess: () => robot.trail.size >= 3 && robot.x > 8
-            },
-            {
-                id: 12,
-                name: "Zigzag Complejo",
-                difficulty: "Medio",
-                description: "Navega el zigzag hasta la meta",
-                hint: "Alterna avances y giros estratégicamente",
-                setup: {
-                    walls: ["8,9", "8,8", "8,7", "17,7", "17,6", "17,5"],
-                    start: {x: 5, y: 10},
-                    goal: {x: 20, y: 4}
-                },
-                checkSuccess: () => robot.x === 20 && robot.y === 4
-            },
-            {
-                id: 13,
-                name: "Patrón de Cruz",
-                difficulty: "Medio",
-                description: "Dibuja una cruz pintando desde el centro",
-                hint: "Avanza y pinta en 4 direcciones desde el centro",
-                setup: {
-                    walls: [],
-                    start: {x: 12, y: 7},
-                    goal: null
-                },
-                checkSuccess: () => robot.trail.size >= 8
-            },
-            {
-                id: 14,
-                name: "Detector de Meta",
-                difficulty: "Medio",
-                description: "Usa SI EN_META para pintar solo en la meta",
-                hint: "Avanza hasta meta, SI EN_META: PINTAR, FIN SI",
-                setup: {
-                    walls: [],
-                    start: {x: 12, y: 10},
-                    goal: {x: 12, y: 5}
-                },
-                checkSuccess: () => robot.x === 12 && robot.y === 5 && robot.trail.has('12,5')
-            },
-            {
-                id: 15,
-                name: "Laberinto Complejo",
-                difficulty: "Difícil",
-                description: "Navega este laberinto complejo hasta la meta",
-                hint: "Planea tu ruta con cuidado",
-                setup: {
-                    walls: [
-                        "8,5", "8,6", "8,7", "8,8", "8,9",
-                        "11,5", "11,7", "11,9",
-                        "14,5", "14,7", "14,9",
-                        "17,5", "17,6", "17,7", "17,8", "17,9"
-                    ],
-                    start: {x: 5, y: 7},
-                    goal: {x: 20, y: 7}
-                },
-                checkSuccess: () => robot.x === 20 && robot.y === 7
-            },
-            {
-                id: 16,
-                name: "Espiral Creativa",
-                difficulty: "Difícil",
-                description: "Dibuja una espiral usando repeticiones",
-                hint: "Incrementa pasos en cada vuelta",
-                setup: {
-                    walls: [],
-                    start: {x: 12, y: 7},
-                    goal: null
-                },
-                checkSuccess: () => robot.trail.size >= 12
-            },
-            {
-                id: 17,
-                name: "Condicional Avanzado",
-                difficulty: "Difícil",
-                description: "Usa SI HAY_MURO para decidir girar o avanzar",
-                hint: "REPETIR 20: SI HAY_MURO: GIRAR, FIN SI, AVANZAR, FIN REPETIR",
-                setup: {
-                    walls: ["12,6", "13,7", "12,8", "11,7"],
-                    start: {x: 12, y: 7},
                     goal: {x: 15, y: 7}
                 },
                 checkSuccess: () => robot.x === 15 && robot.y === 7
             },
             {
-                id: 18,
-                name: "Patrón Damero",
+                id: 4,
+                name: "Pasillo en L",
+                difficulty: "Medio",
+                description: "Navega el pasillo hasta la meta",
+                setup: {
+                    walls: ["10,5", "11,5", "12,5", "13,5", "13,6", "13,7", "13,8", "13,9"],
+                    start: {x: 10, y: 7},
+                    goal: {x: 16, y: 7}
+                },
+                checkSuccess: () => robot.x === 16 && robot.y === 7
+            },
+            {
+                id: 5,
+                name: "Zigzag",
+                difficulty: "Medio",
+                description: "Cruza el zigzag hasta la meta",
+                setup: {
+                    walls: ["11,5", "11,6", "13,7", "13,8", "15,5", "15,6"],
+                    start: {x: 9, y: 7},
+                    goal: {x: 17, y: 7}
+                },
+                checkSuccess: () => robot.x === 17 && robot.y === 7
+            },
+            {
+                id: 6,
+                name: "Corredor Estrecho",
+                difficulty: "Medio",
+                description: "Pasa por el corredor",
+                setup: {
+                    walls: ["11,5", "11,6", "11,7", "11,8", "11,9", "15,5", "15,6", "15,7", "15,8", "15,9"],
+                    start: {x: 9, y: 7},
+                    goal: {x: 17, y: 7}
+                },
+                checkSuccess: () => robot.x === 17 && robot.y === 7
+            },
+            {
+                id: 7,
+                name: "Laberinto Mini",
+                difficulty: "Medio",
+                description: "Encuentra el camino",
+                setup: {
+                    walls: ["10,5", "11,5", "12,5", "13,5", "11,7", "12,7", "13,7", "11,9", "12,9", "13,9"],
+                    start: {x: 10, y: 7},
+                    goal: {x: 13, y: 11}
+                },
+                checkSuccess: () => robot.x === 13 && robot.y === 11
+            },
+            {
+                id: 8,
+                name: "Espiral Simple",
                 difficulty: "Difícil",
-                description: "Crea un patrón de damero 4x4",
-                hint: "Combina repeticiones y giros con pintura",
+                description: "Llega al centro de la espiral",
+                setup: {
+                    walls: ["9,5", "10,5", "11,5", "12,5", "13,5", "14,5", "14,6", "14,7", "14,8", "14,9", "9,9", "10,9", "11,9", "12,9", "13,9", "9,6", "9,7", "9,8", "11,7", "12,7"],
+                    start: {x: 10, y: 7},
+                    goal: {x: 12, y: 6}
+                },
+                checkSuccess: () => robot.x === 12 && robot.y === 6
+            },
+            {
+                id: 9,
+                name: "Doble Barrera",
+                difficulty: "Medio",
+                description: "Cruza ambas barreras",
+                setup: {
+                    walls: ["11,5", "11,6", "11,7", "15,7", "15,8", "15,9"],
+                    start: {x: 9, y: 7},
+                    goal: {x: 18, y: 7}
+                },
+                checkSuccess: () => robot.x === 18 && robot.y === 7
+            },
+            {
+                id: 10,
+                name: "Escalera",
+                difficulty: "Medio",
+                description: "Sube la escalera",
+                setup: {
+                    walls: ["11,8", "12,7", "13,6", "14,5"],
+                    start: {x: 10, y: 9},
+                    goal: {x: 15, y: 4}
+                },
+                checkSuccess: () => robot.x === 15 && robot.y === 4
+            },
+            {
+                id: 11,
+                name: "Cruz de Muros",
+                difficulty: "Difícil",
+                description: "Rodea la cruz",
+                setup: {
+                    walls: ["12,5", "12,6", "12,7", "12,8", "12,9", "10,7", "11,7", "13,7", "14,7"],
+                    start: {x: 10, y: 5},
+                    goal: {x: 14, y: 9}
+                },
+                checkSuccess: () => robot.x === 14 && robot.y === 9
+            },
+            {
+                id: 12,
+                name: "Túnel en U",
+                difficulty: "Difícil",
+                description: "Atraviesa el túnel",
+                setup: {
+                    walls: ["10,5", "11,5", "12,5", "13,5", "14,5", "10,9", "11,9", "12,9", "13,9", "14,9", "10,6", "10,7", "10,8"],
+                    start: {x: 11, y: 7},
+                    goal: {x: 15, y: 7}
+                },
+                checkSuccess: () => robot.x === 15 && robot.y === 7
+            },
+            {
+                id: 13,
+                name: "Laberinto T",
+                difficulty: "Difícil",
+                description: "Navega la T",
+                setup: {
+                    walls: ["10,6", "11,6", "12,6", "13,6", "14,6", "12,7", "12,8", "12,9", "12,10"],
+                    start: {x: 12, y: 5},
+                    goal: {x: 16, y: 8}
+                },
+                checkSuccess: () => robot.x === 16 && robot.y === 8
+            },
+            {
+                id: 14,
+                name: "Camino Bloqueado",
+                difficulty: "Difícil",
+                description: "Encuentra el camino alternativo",
+                setup: {
+                    walls: ["11,6", "12,6", "13,6", "14,6", "15,6", "11,8", "12,8", "13,8", "14,8", "15,8", "13,7"],
+                    start: {x: 10, y: 7},
+                    goal: {x: 17, y: 7}
+                },
+                checkSuccess: () => robot.x === 17 && robot.y === 7
+            },
+            {
+                id: 15,
+                name: "Laberinto Maestro",
+                difficulty: "Muy Difícil",
+                description: "Resuelve el laberinto completo",
+                setup: {
+                    walls: ["8,4", "9,4", "10,4", "11,4", "12,4", "13,4", "14,4", "15,4", "16,4", "8,10", "9,10", "10,10", "11,10", "12,10", "13,10", "14,10", "15,10", "16,10", "8,5", "8,6", "8,7", "8,8", "8,9", "16,5", "16,6", "16,7", "16,8", "16,9", "10,6", "11,6", "13,6", "14,6", "10,8", "11,8", "13,8", "14,8"],
+                    start: {x: 9, y: 7},
+                    goal: {x: 15, y: 7}
+                },
+                checkSuccess: () => robot.x === 15 && robot.y === 7
+            },
+            {
+                id: 16,
+                name: "Línea Horizontal",
+                difficulty: "Fácil",
+                description: "Pinta una línea horizontal",
                 setup: {
                     walls: [],
-                    start: {x: 10, y: 5},
-                    goal: null
+                    start: {x: 10, y: 7},
+                    goal: null,
+                    targetImage: ["10,7", "11,7", "12,7", "13,7", "14,7"]
                 },
-                checkSuccess: () => robot.trail.size >= 8
+                checkSuccess: () => {
+                    const target = ["10,7", "11,7", "12,7", "13,7", "14,7"];
+                    return target.every(pos => robot.trail.has(pos)) && robot.trail.size === target.length;
+                }
+            },
+            {
+                id: 17,
+                name: "Línea Vertical",
+                difficulty: "Fácil",
+                description: "Pinta una línea vertical",
+                setup: {
+                    walls: [],
+                    start: {x: 12, y: 5},
+                    goal: null,
+                    targetImage: ["12,5", "12,6", "12,7", "12,8", "12,9"]
+                },
+                checkSuccess: () => {
+                    const target = ["12,5", "12,6", "12,7", "12,8", "12,9"];
+                    return target.every(pos => robot.trail.has(pos)) && robot.trail.size === target.length;
+                }
+            },
+            {
+                id: 18,
+                name: "Cuadrado 3x3",
+                difficulty: "Fácil",
+                description: "Dibuja un cuadrado",
+                setup: {
+                    walls: [],
+                    start: {x: 10, y: 10},
+                    goal: null,
+                    targetImage: ["10,10", "11,10", "12,10", "12,9", "12,8", "11,8", "10,8", "10,9"]
+                },
+                checkSuccess: () => {
+                    const target = ["10,10", "11,10", "12,10", "12,9", "12,8", "11,8", "10,8", "10,9"];
+                    return target.every(pos => robot.trail.has(pos));
+                }
             },
             {
                 id: 19,
-                name: "Búsqueda Inteligente",
-                difficulty: "Difícil",
-                description: "Encuentra la meta usando condiciones",
-                hint: "REPETIR 50: SI NO_EN_META: AVANZAR, FIN SI, FIN REPETIR",
+                name: "Cruz",
+                difficulty: "Medio",
+                description: "Dibuja una cruz",
                 setup: {
-                    walls: ["10,7", "11,7", "13,7", "14,7"],
-                    start: {x: 12, y: 7},
-                    goal: {x: 12, y: 10}
+                    walls: [],
+                    start: {x: 12, y: 5},
+                    goal: null,
+                    targetImage: ["12,5", "12,6", "12,7", "12,8", "12,9", "10,7", "11,7", "13,7", "14,7"]
                 },
-                checkSuccess: () => robot.x === 12 && robot.y === 10
+                checkSuccess: () => {
+                    const target = ["12,5", "12,6", "12,7", "12,8", "12,9", "10,7", "11,7", "13,7", "14,7"];
+                    return target.every(pos => robot.trail.has(pos));
+                }
             },
             {
                 id: 20,
-                name: "Desafío Maestro",
-                difficulty: "Difícil",
-                description: "Navega el laberinto y pinta el camino",
-                hint: "Combina condicionales, repeticiones y pintura",
+                name: "L Grande",
+                difficulty: "Medio",
+                description: "Dibuja una L",
                 setup: {
-                    walls: [
-                        "6,5", "6,6", "6,7", "6,8", "6,9",
-                        "9,5", "9,7", "9,8", "9,9",
-                        "12,5", "12,6", "12,7", "12,9",
-                        "15,5", "15,6", "15,8", "15,9",
-                        "18,5", "18,6", "18,7", "18,8", "18,9"
-                    ],
-                    start: {x: 4, y: 7},
-                    goal: {x: 20, y: 7}
+                    walls: [],
+                    start: {x: 10, y: 5},
+                    goal: null,
+                    targetImage: ["10,5", "10,6", "10,7", "10,8", "10,9", "11,9", "12,9", "13,9"]
                 },
-                checkSuccess: () => robot.x === 20 && robot.y === 7
+                checkSuccess: () => {
+                    const target = ["10,5", "10,6", "10,7", "10,8", "10,9", "11,9", "12,9", "13,9"];
+                    return target.every(pos => robot.trail.has(pos));
+                }
+            },
+            {
+                id: 21,
+                name: "Escalera Pintada",
+                difficulty: "Medio",
+                description: "Dibuja escaleras",
+                setup: {
+                    walls: [],
+                    start: {x: 10, y: 9},
+                    goal: null,
+                    targetImage: ["10,9", "11,9", "11,8", "12,8", "12,7", "13,7", "13,6", "14,6"]
+                },
+                checkSuccess: () => {
+                    const target = ["10,9", "11,9", "11,8", "12,8", "12,7", "13,7", "13,6", "14,6"];
+                    return target.every(pos => robot.trail.has(pos));
+                }
+            },
+            {
+                id: 22,
+                name: "T Invertida",
+                difficulty: "Medio",
+                description: "Dibuja una T",
+                setup: {
+                    walls: [],
+                    start: {x: 10, y: 6},
+                    goal: null,
+                    targetImage: ["10,6", "11,6", "12,6", "13,6", "14,6", "12,7", "12,8", "12,9"]
+                },
+                checkSuccess: () => {
+                    const target = ["10,6", "11,6", "12,6", "13,6", "14,6", "12,7", "12,8", "12,9"];
+                    return target.every(pos => robot.trail.has(pos));
+                }
+            },
+            {
+                id: 23,
+                name: "Zigzag Pintado",
+                difficulty: "Medio",
+                description: "Dibuja un zigzag",
+                setup: {
+                    walls: [],
+                    start: {x: 10, y: 7},
+                    goal: null,
+                    targetImage: ["10,7", "11,7", "12,7", "12,6", "13,6", "14,6", "14,7", "15,7"]
+                },
+                checkSuccess: () => {
+                    const target = ["10,7", "11,7", "12,7", "12,6", "13,6", "14,6", "14,7", "15,7"];
+                    return target.every(pos => robot.trail.has(pos));
+                }
+            },
+            {
+                id: 24,
+                name: "Doble L",
+                difficulty: "Difícil",
+                description: "Dibuja dos L conectadas",
+                setup: {
+                    walls: [],
+                    start: {x: 10, y: 6},
+                    goal: null,
+                    targetImage: ["10,6", "10,7", "10,8", "11,8", "12,8", "12,7", "12,6", "13,6", "14,6"]
+                },
+                checkSuccess: () => {
+                    const target = ["10,6", "10,7", "10,8", "11,8", "12,8", "12,7", "12,6", "13,6", "14,6"];
+                    return target.every(pos => robot.trail.has(pos));
+                }
+            },
+            {
+                id: 25,
+                name: "Rectángulo",
+                difficulty: "Medio",
+                description: "Dibuja un rectángulo 5x3",
+                setup: {
+                    walls: [],
+                    start: {x: 10, y: 10},
+                    goal: null,
+                    targetImage: ["10,10", "11,10", "12,10", "13,10", "14,10", "14,9", "14,8", "13,8", "12,8", "11,8", "10,8", "10,9"]
+                },
+                checkSuccess: () => {
+                    const target = ["10,10", "11,10", "12,10", "13,10", "14,10", "14,9", "14,8", "13,8", "12,8", "11,8", "10,8", "10,9"];
+                    return target.every(pos => robot.trail.has(pos));
+                }
+            },
+            {
+                id: 26,
+                name: "Espiral Cuadrada",
+                difficulty: "Difícil",
+                description: "Dibuja una espiral",
+                setup: {
+                    walls: [],
+                    start: {x: 10, y: 10},
+                    goal: null,
+                    targetImage: ["10,10", "11,10", "12,10", "13,10", "13,9", "13,8", "13,7", "12,7", "11,7", "10,7", "10,8", "10,9", "11,9", "12,9", "12,8"]
+                },
+                checkSuccess: () => {
+                    const target = ["10,10", "11,10", "12,10", "13,10", "13,9", "13,8", "13,7", "12,7", "11,7", "10,7", "10,8", "10,9", "11,9", "12,9", "12,8"];
+                    return target.every(pos => robot.trail.has(pos));
+                }
+            },
+            {
+                id: 27,
+                name: "Letra E",
+                difficulty: "Difícil",
+                description: "Dibuja la letra E",
+                setup: {
+                    walls: [],
+                    start: {x: 10, y: 6},
+                    goal: null,
+                    targetImage: ["10,6", "10,7", "10,8", "10,9", "10,10", "11,6", "12,6", "11,8", "12,8", "11,10", "12,10"]
+                },
+                checkSuccess: () => {
+                    const target = ["10,6", "10,7", "10,8", "10,9", "10,10", "11,6", "12,6", "11,8", "12,8", "11,10", "12,10"];
+                    return target.every(pos => robot.trail.has(pos));
+                }
+            },
+            {
+                id: 28,
+                name: "Letra H",
+                difficulty: "Difícil",
+                description: "Dibuja la letra H",
+                setup: {
+                    walls: [],
+                    start: {x: 10, y: 6},
+                    goal: null,
+                    targetImage: ["10,6", "10,7", "10,8", "10,9", "10,10", "11,8", "12,8", "13,6", "13,7", "13,8", "13,9", "13,10"]
+                },
+                checkSuccess: () => {
+                    const target = ["10,6", "10,7", "10,8", "10,9", "10,10", "11,8", "12,8", "13,6", "13,7", "13,8", "13,9", "13,10"];
+                    return target.every(pos => robot.trail.has(pos));
+                }
+            },
+            {
+                id: 29,
+                name: "Casa Simple",
+                difficulty: "Difícil",
+                description: "Dibuja una casa",
+                setup: {
+                    walls: [],
+                    start: {x: 10, y: 10},
+                    goal: null,
+                    targetImage: ["10,10", "10,9", "10,8", "11,8", "12,8", "13,8", "13,9", "13,10", "12,10", "11,10", "11,7", "12,7", "12,6"]
+                },
+                checkSuccess: () => {
+                    const target = ["10,10", "10,9", "10,8", "11,8", "12,8", "13,8", "13,9", "13,10", "12,10", "11,10", "11,7", "12,7", "12,6"];
+                    return target.every(pos => robot.trail.has(pos));
+                }
+            },
+            {
+                id: 30,
+                name: "Diamante",
+                difficulty: "Muy Difícil",
+                description: "Dibuja un diamante perfecto",
+                setup: {
+                    walls: [],
+                    start: {x: 12, y: 5},
+                    goal: null,
+                    targetImage: ["12,5", "11,6", "10,7", "11,8", "12,9", "13,8", "14,7", "13,6"]
+                },
+                checkSuccess: () => {
+                    const target = ["12,5", "11,6", "10,7", "11,8", "12,9", "13,8", "14,7", "13,6"];
+                    return target.every(pos => robot.trail.has(pos));
+                }
             }
         ];
         
@@ -1707,7 +1937,16 @@
             
             log(`🎯 Reto ${challenge.id}: ${challenge.name}`);
             log(`📝 ${challenge.description}`);
-            log(`💡 Pista: ${challenge.hint}`);
+        }
+        
+        function showMessage(message, isSuccess) {
+            const overlay = document.getElementById('messageOverlay');
+            overlay.textContent = message;
+            overlay.className = 'message-overlay ' + (isSuccess ? 'success' : 'error');
+            overlay.style.display = 'block';
+            setTimeout(() => {
+                overlay.style.display = 'none';
+            }, 2000);
         }
         
         function checkChallengeCompletion() {
@@ -1715,7 +1954,7 @@
             
             if (state.currentChallenge.checkSuccess()) {
                 state.completedChallenges.add(state.currentChallenge.id);
-                log(`🎉 ¡Reto ${state.currentChallenge.id} completado!`);
+                showMessage('¡LOGRADO!', true);
                 
                 localStorage.setItem('completedChallenges', 
                     JSON.stringify(Array.from(state.completedChallenges)));
@@ -1733,7 +1972,7 @@
                     }
                 }, 500);
             } else {
-                log('❌ Aún no has completado el objetivo del reto');
+                showMessage('ERROR', false);
             }
         }
         
@@ -1806,11 +2045,11 @@
         
         function log(message) {
             const console = document.getElementById('console');
+            console.innerHTML = '';
             const line = document.createElement('div');
             line.className = 'console-line';
             line.textContent = message;
             console.appendChild(line);
-            console.scrollTop = console.scrollHeight;
         }
         
         document.getElementById('speedSlider').addEventListener('input', (e) => {
@@ -1835,12 +2074,8 @@
             initCanvas();
             setupCanvasEvents();
             loadCompletedChallenges();
-            log('🤖 Robot listo');
-            log('🧩 Arrastra bloques al área de programa');
-            log('🎯 Prueba los 20 retos de programación');
-            log('⏯️ Usa modo paso a paso para depurar');
-            log('✨ Designed by Hansel Peña Diaz - V3');
         });
     </script>
+    <div id="messageOverlay" class="message-overlay"></div>
 </body>
 </html>
