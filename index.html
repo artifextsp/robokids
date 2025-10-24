@@ -1,0 +1,1838 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Robot con Bloques - Versión Mejorada</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Comic Sans MS', 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 8px;
+        }
+        .container {
+            max-width: 1800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 15px 30px rgba(0,0,0,0.1);
+            overflow: hidden;
+            height: calc(100vh - 16px);
+            display: flex;
+            flex-direction: column;
+        }
+        .header {
+            background: linear-gradient(45deg, #4CAF50, #2196F3);
+            color: white;
+            padding: 10px 15px;
+            text-align: center;
+        }
+        .header h1 { font-size: 1.5em; margin-bottom: 3px; }
+        .header p { font-size: 0.85em; opacity: 0.9; }
+        
+        .main-content {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+        
+        .blocks-panel {
+            width: 180px;
+            background: #f0f8ff;
+            border-right: 2px solid #4CAF50;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+        }
+        .panel-title {
+            background: #4CAF50;
+            color: white;
+            padding: 8px;
+            font-size: 0.9em;
+            font-weight: bold;
+            text-align: center;
+        }
+        .blocks-category {
+            padding: 6px;
+        }
+        .category-title {
+            font-size: 0.75em;
+            font-weight: bold;
+            color: #333;
+            margin: 6px 0 4px 0;
+            padding: 3px;
+            background: rgba(255,255,255,0.7);
+            border-radius: 4px;
+            border-left: 3px solid #4CAF50;
+        }
+        
+        .block-palette {
+            background: white;
+            border: 2px solid;
+            border-radius: 6px;
+            padding: 5px 6px;
+            margin: 3px 0;
+            cursor: grab;
+            font-weight: bold;
+            font-size: 10px;
+            transition: transform 0.2s;
+            user-select: none;
+        }
+        .block-palette:hover {
+            transform: scale(1.05);
+        }
+        .block-palette:active {
+            cursor: grabbing;
+        }
+        
+        .block-move { border-color: #2196F3; background: #E3F2FD; color: #1976D2; }
+        .block-turn { border-color: #9C27B0; background: #F3E5F5; color: #7B1FA2; }
+        .block-paint { border-color: #FF9800; background: #FFF3E0; color: #F57C00; }
+        .block-control { border-color: #4CAF50; background: #E8F5E9; color: #388E3C; }
+        .block-conditional { border-color: #FF5722; background: #FBE9E7; color: #D84315; }
+        .block-end { border-color: #607D8B; background: #ECEFF1; color: #455A64; }
+        
+        .workspace-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: #f5f5f5;
+        }
+        
+        .controls {
+            background: white;
+            padding: 8px;
+            border-bottom: 2px solid #ddd;
+            display: flex;
+            gap: 6px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        
+        .control-btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 11px;
+            transition: all 0.3s;
+            color: white;
+        }
+        .control-btn.run { background: linear-gradient(45deg, #4CAF50, #66BB6A); }
+        .control-btn.step { background: linear-gradient(45deg, #FF9800, #FFB74D); }
+        .control-btn.reset { background: linear-gradient(45deg, #2196F3, #64B5F6); }
+        .control-btn.clear { background: linear-gradient(45deg, #f44336, #e57373); }
+        .control-btn.challenges { background: linear-gradient(45deg, #9C27B0, #BA68C8); }
+        .control-btn:hover { transform: scale(1.05); }
+        .control-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .speed-control {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-left: auto;
+        }
+        .speed-control label {
+            font-size: 10px;
+            font-weight: 600;
+        }
+        #speedSlider {
+            width: 100px;
+        }
+        
+        .examples-bar {
+            background: white;
+            padding: 6px 8px;
+            border-bottom: 2px solid #ddd;
+            display: flex;
+            gap: 6px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .example-label {
+            font-weight: bold;
+            font-size: 11px;
+            color: #333;
+        }
+        .example-btn, #mapSelector {
+            padding: 4px 10px;
+            border: 2px solid #ddd;
+            background: white;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 10px;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+        .example-btn:hover {
+            background: #4CAF50;
+            color: white;
+            border-color: #4CAF50;
+        }
+        
+        .construction-tools {
+            background: #fff3cd;
+            padding: 6px 8px;
+            border-bottom: 2px solid #ffc107;
+            display: none;
+            gap: 6px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .tool-btn {
+            padding: 4px 10px;
+            border: 2px solid #ddd;
+            background: white;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 10px;
+            font-weight: 600;
+        }
+        .tool-btn.active {
+            background: #4CAF50;
+            color: white;
+            border-color: #4CAF50;
+        }
+        
+        .workspace-container {
+            flex: 1;
+            display: flex;
+            overflow: hidden;
+        }
+        
+        .canvas-container {
+            flex: 2;
+            display: flex;
+            flex-direction: column;
+            background: #ffffff;
+            border-right: 2px solid #ddd;
+            padding: 10px;
+        }
+        
+        #robotCanvas {
+            border: 3px solid #4CAF50;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            margin: 0 auto;
+        }
+        
+        .assembly-area {
+            flex: 1;
+            background: #fafafa;
+            overflow-y: auto;
+            overflow-x: hidden;
+            padding: 12px;
+            border-left: 2px solid #ddd;
+        }
+        
+        .assembly-area::-webkit-scrollbar {
+            width: 12px;
+        }
+        
+        .assembly-area::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 6px;
+        }
+        
+        .assembly-area::-webkit-scrollbar-thumb {
+            background: #4CAF50;
+            border-radius: 6px;
+        }
+        
+        .assembly-area::-webkit-scrollbar-thumb:hover {
+            background: #45a049;
+        }
+        
+        .assembly-title {
+            background: #4CAF50;
+            color: white;
+            padding: 6px 8px;
+            font-size: 0.9em;
+            font-weight: bold;
+            text-align: center;
+            border-radius: 4px;
+            margin-bottom: 10px;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+        
+        .block-assembled {
+            background: white;
+            border: 2px solid;
+            border-radius: 6px;
+            padding: 8px 10px;
+            margin: 5px 0;
+            font-weight: bold;
+            font-size: 11px;
+            cursor: move;
+            position: relative;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: margin-left 0.3s;
+        }
+        
+        .block-assembled.executing {
+            background: #FFF9C4;
+            box-shadow: 0 0 10px rgba(255, 235, 59, 0.8);
+        }
+        
+        .block-assembled.indent-1 {
+            margin-left: 20px;
+        }
+        
+        .block-assembled.indent-2 {
+            margin-left: 40px;
+        }
+        
+        .block-assembled.indent-3 {
+            margin-left: 60px;
+        }
+        
+        .block-delete {
+            position: absolute;
+            right: 6px;
+            background: #f44336;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+            font-size: 14px;
+            line-height: 18px;
+            text-align: center;
+        }
+        
+        .block-input {
+            width: 40px;
+            padding: 2px 4px;
+            border: 1px solid #ddd;
+            border-radius: 3px;
+            font-size: 10px;
+            text-align: center;
+        }
+        
+        .block-select {
+            padding: 2px 4px;
+            border: 1px solid #ddd;
+            border-radius: 3px;
+            font-size: 10px;
+            background: white;
+        }
+        
+        .console-container {
+            background: #1e1e1e;
+            color: #00ff00;
+            padding: 8px;
+            height: 120px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 11px;
+            border-top: 2px solid #4CAF50;
+        }
+        
+        .console-line {
+            margin: 2px 0;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.6);
+        }
+
+        .modal-content {
+            background-color: white;
+            margin: 5% auto;
+            padding: 20px;
+            border-radius: 12px;
+            width: 80%;
+            max-width: 800px;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #4CAF50;
+        }
+
+        .modal-header h2 {
+            color: #4CAF50;
+            font-size: 1.5em;
+        }
+
+        .close {
+            color: #aaa;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .close:hover {
+            color: #000;
+        }
+
+        .challenges-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .challenge-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            position: relative;
+        }
+
+        .challenge-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.2);
+        }
+
+        .challenge-card.completed {
+            background: linear-gradient(135deg, #4CAF50 0%, #66BB6A 100%);
+        }
+
+        .challenge-card.completed::after {
+            content: "✅";
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            font-size: 24px;
+        }
+
+        .challenge-card h3 {
+            font-size: 1em;
+            margin-bottom: 8px;
+        }
+
+        .challenge-card p {
+            font-size: 0.85em;
+            opacity: 0.9;
+        }
+
+        .challenge-difficulty {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 0.75em;
+            margin-top: 8px;
+            background: rgba(255,255,255,0.2);
+        }
+
+        .challenge-info {
+            background: #f0f8ff;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            border-left: 4px solid #4CAF50;
+        }
+
+        .challenge-info h3 {
+            color: #4CAF50;
+            margin-bottom: 10px;
+        }
+
+        .challenge-info p {
+            margin: 5px 0;
+            line-height: 1.6;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🤖 Robot Programable</h1>
+            <p>Aprende programación con bloques visuales - Versión Mejorada</p>
+        </div>
+        
+        <div class="main-content">
+            <div class="blocks-panel">
+                <div class="panel-title">🧩 BLOQUES</div>
+                <div class="blocks-category">
+                    <div class="category-title">⬆️ Movimiento</div>
+                    <div class="block-palette block-move" draggable="true" data-type="AVANZAR">
+                        ⬆️ AVANZAR
+                    </div>
+                    <div class="block-palette block-move" draggable="true" data-type="RETROCEDER">
+                        ⬇️ RETROCEDER
+                    </div>
+                </div>
+                
+                <div class="blocks-category">
+                    <div class="category-title">↩️ Giros</div>
+                    <div class="block-palette block-turn" draggable="true" data-type="GIRAR_DERECHA">
+                        ↪️ GIRAR →
+                    </div>
+                    <div class="block-palette block-turn" draggable="true" data-type="GIRAR_IZQUIERDA">
+                        ↩️ GIRAR ←
+                    </div>
+                </div>
+                
+                <div class="blocks-category">
+                    <div class="category-title">🎨 Pintar</div>
+                    <div class="block-palette block-paint" draggable="true" data-type="PINTAR">
+                        🎨 PINTAR
+                    </div>
+                    <div class="block-palette block-paint" draggable="true" data-type="NO_PINTAR">
+                        🚫 NO PINTAR
+                    </div>
+                </div>
+                
+                <div class="blocks-category">
+                    <div class="category-title">🔁 Control</div>
+                    <div class="block-palette block-control" draggable="true" data-type="REPETIR">
+                        🔁 REPETIR
+                    </div>
+                    <div class="block-palette block-end" draggable="true" data-type="FIN_REPETIR">
+                        🔚 FIN REPETIR
+                    </div>
+                </div>
+                
+                <div class="blocks-category">
+                    <div class="category-title">❓ Condicionales</div>
+                    <div class="block-palette block-conditional" draggable="true" data-type="SI">
+                        ❓ SI
+                    </div>
+                    <div class="block-palette block-end" draggable="true" data-type="FIN_SI">
+                        🔚 FIN SI
+                    </div>
+                </div>
+            </div>
+            
+            <div class="workspace-area">
+                <div class="controls">
+                    <button class="control-btn run" onclick="runProgram()">▶️ Ejecutar</button>
+                    <button class="control-btn step" onclick="stepProgram()">⏯️ Paso a Paso</button>
+                    <button class="control-btn step" onclick="nextStep()" id="nextStepBtn" disabled>⏭️ Siguiente</button>
+                    <button class="control-btn reset" onclick="resetRobot()">🔄 Reiniciar</button>
+                    <button class="control-btn clear" onclick="clearProgram()">🗑️ Limpiar</button>
+                    <button class="control-btn challenges" onclick="openChallengesModal()">🎯 Retos</button>
+                    
+                    <div style="flex: 1;"></div>
+                    
+                    <div class="speed-control">
+                        <label>Velocidad:</label>
+                        <input type="range" id="speedSlider" min="1" max="10" value="5">
+                        <span id="speedValue">5</span>
+                    </div>
+                </div>
+                
+                <div class="examples-bar">
+                    <span class="example-label">📚 Ejemplos:</span>
+                    <button class="example-btn" onclick="loadExample('cuadrado')">Cuadrado</button>
+                    <button class="example-btn" onclick="loadExample('linea')">Línea</button>
+                    
+                    <span class="example-label" style="margin-left: 20px;">🗺️ Mapas:</span>
+                    <select id="mapSelector" onchange="loadMap(this)">
+                        <option value="">Seleccionar...</option>
+                        <option value="map1">Línea Recta</option>
+                        <option value="map2">Esquina Simple</option>
+                        <option value="map3">Zigzag</option>
+                        <option value="map4">Corredor</option>
+                        <option value="map5">L Simple</option>
+                    </select>
+                    
+                    <button class="example-btn" onclick="toggleConstruction()" style="margin-left: 20px;">🏗️ Constructor</button>
+                    <button class="example-btn" onclick="saveProject()">💾 Guardar</button>
+                    <label class="example-btn" style="cursor: pointer;">
+                        📂 Abrir
+                        <input type="file" accept=".json" onchange="loadProject(event)" style="display: none;">
+                    </label>
+                </div>
+                
+                <div class="construction-tools" id="constructionTools">
+                    <span class="example-label">🏗️ Herramientas:</span>
+                    <button class="tool-btn" onclick="setTool('wall')">🧱 Muro</button>
+                    <button class="tool-btn" onclick="setTool('erase')">🧹 Borrar</button>
+                    <button class="tool-btn" onclick="setTool('start')">📍 Inicio</button>
+                    <button class="tool-btn" onclick="setTool('goal')">🎯 Meta</button>
+                    <button class="example-btn" onclick="clearMap()">🗑️ Limpiar Mapa</button>
+                </div>
+                
+                <div class="workspace-container">
+                    <div class="canvas-container">
+                        <canvas id="robotCanvas" width="1000" height="600"></canvas>
+                    </div>
+                    
+                    <div class="assembly-area" id="workspace">
+                        <div class="assembly-title">📝 MI PROGRAMA</div>
+                    </div>
+                </div>
+                
+                <div class="console-container" id="console">
+                    <div class="console-line">🤖 Sistema iniciado...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="challengesModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>🎯 Retos de Programación</h2>
+                <span class="close" onclick="closeChallengesModal()">&times;</span>
+            </div>
+            
+            <div class="challenge-info">
+                <h3>¿Cómo funcionan los retos?</h3>
+                <p>📝 Cada reto tiene un objetivo específico que debes lograr programando el robot.</p>
+                <p>🎓 Los retos están ordenados por dificultad: Fácil, Medio y Difícil.</p>
+                <p>⭐ Completa el objetivo para marcar el reto como completado.</p>
+                <p>💡 ¡Practica y mejora tus habilidades de programación!</p>
+            </div>
+            
+            <div class="challenges-grid" id="challengesGrid">
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const PASTEL_COLORS = {
+            red: '#FFB3BA',      // Rosa pastel
+            blue: '#BAE1FF',     // Azul pastel
+            green: '#BAFFC9',    // Verde pastel
+            yellow: '#FFFFBA',   // Amarillo pastel
+            purple: '#E0BBE4',   // Púrpura pastel
+            orange: '#FFD8B8'    // Naranja pastel
+        };
+
+        const state = {
+            running: false,
+            stepMode: false,
+            stepIndex: 0,
+            draggingRobot: false,
+            constructionMode: false,
+            currentTool: null,
+            currentChallenge: null,
+            completedChallenges: new Set(),
+            isPainting: false,
+            paintColor: 'red',
+            flatProgram: []
+        };
+        
+        const robot = {
+            canvas: null,
+            ctx: null,
+            x: 12,
+            y: 7,
+            direction: 0,
+            gridWidth: 25,
+            gridHeight: 15,
+            cellSize: 40,
+            trail: new Map(),
+            walls: new Map(),
+            startPoint: {x: 12, y: 7},
+            goalPoint: null
+        };
+        
+        const workspace = document.getElementById('workspace');
+        
+        function initCanvas() {
+            robot.canvas = document.getElementById('robotCanvas');
+            robot.canvas.width = robot.gridWidth * robot.cellSize;
+            robot.canvas.height = robot.gridHeight * robot.cellSize;
+            robot.ctx = robot.canvas.getContext('2d');
+            redrawAll();
+        }
+        
+        function redrawAll() {
+            const ctx = robot.ctx;
+            ctx.clearRect(0, 0, robot.canvas.width, robot.canvas.height);
+            
+            ctx.strokeStyle = '#e0e0e0';
+            ctx.lineWidth = 1;
+            for (let i = 0; i <= robot.gridWidth; i++) {
+                ctx.beginPath();
+                ctx.moveTo(i * robot.cellSize, 0);
+                ctx.lineTo(i * robot.cellSize, robot.canvas.height);
+                ctx.stroke();
+            }
+            for (let i = 0; i <= robot.gridHeight; i++) {
+                ctx.beginPath();
+                ctx.moveTo(0, i * robot.cellSize);
+                ctx.lineTo(robot.canvas.width, i * robot.cellSize);
+                ctx.stroke();
+            }
+            
+            robot.trail.forEach((color, pos) => {
+                const [x, y] = pos.split(',').map(Number);
+                ctx.fillStyle = PASTEL_COLORS[color] || color;
+                ctx.fillRect(x * robot.cellSize + 2, y * robot.cellSize + 2, 
+                           robot.cellSize - 4, robot.cellSize - 4);
+            });
+            
+            robot.walls.forEach((color, pos) => {
+                const [x, y] = pos.split(',').map(Number);
+                ctx.fillStyle = color;
+                ctx.fillRect(x * robot.cellSize, y * robot.cellSize, 
+                           robot.cellSize, robot.cellSize);
+            });
+            
+            if (robot.startPoint) {
+                ctx.fillStyle = 'rgba(76, 175, 80, 0.3)';
+                ctx.fillRect(robot.startPoint.x * robot.cellSize, robot.startPoint.y * robot.cellSize,
+                           robot.cellSize, robot.cellSize);
+                ctx.fillStyle = '#4CAF50';
+                ctx.font = 'bold 20px Arial';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText('S', robot.startPoint.x * robot.cellSize + robot.cellSize/2,
+                           robot.startPoint.y * robot.cellSize + robot.cellSize/2);
+            }
+            
+            if (robot.goalPoint) {
+                ctx.fillStyle = 'rgba(255, 152, 0, 0.3)';
+                ctx.fillRect(robot.goalPoint.x * robot.cellSize, robot.goalPoint.y * robot.cellSize,
+                           robot.cellSize, robot.cellSize);
+                ctx.fillStyle = '#FF9800';
+                ctx.font = 'bold 20px Arial';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText('M', robot.goalPoint.x * robot.cellSize + robot.cellSize/2,
+                           robot.goalPoint.y * robot.cellSize + robot.cellSize/2);
+            }
+            
+            const centerX = robot.x * robot.cellSize + robot.cellSize / 2;
+            const centerY = robot.y * robot.cellSize + robot.cellSize / 2;
+            const size = robot.cellSize * 0.6;
+            
+            ctx.save();
+            ctx.translate(centerX, centerY);
+            ctx.rotate((robot.direction * 90) * Math.PI / 180);
+            
+            ctx.fillStyle = '#2196F3';
+            ctx.beginPath();
+            ctx.arc(0, 0, size/2, 0, 2 * Math.PI);
+            ctx.fill();
+            
+            ctx.fillStyle = '#fff';
+            ctx.beginPath();
+            ctx.moveTo(0, -size/3);
+            ctx.lineTo(-size/4, size/6);
+            ctx.lineTo(size/4, size/6);
+            ctx.closePath();
+            ctx.fill();
+            
+            ctx.restore();
+        }
+        
+        document.querySelectorAll('.block-palette').forEach(block => {
+            block.addEventListener('dragstart', (e) => {
+                e.dataTransfer.setData('blockType', e.target.dataset.type);
+            });
+        });
+        
+        workspace.addEventListener('dragover', (e) => {
+            e.preventDefault();
+        });
+        
+        workspace.addEventListener('drop', (e) => {
+            e.preventDefault();
+            const blockType = e.dataTransfer.getData('blockType');
+            addBlock(blockType);
+        });
+        
+        function addBlock(type) {
+            const block = document.createElement('div');
+            block.className = 'block-assembled';
+            block.draggable = true;
+            
+            const colorClass = type.includes('AVANZAR') || type.includes('RETROCEDER') ? 'block-move' :
+                             type.includes('GIRAR') ? 'block-turn' :
+                             type.includes('PINTAR') ? 'block-paint' :
+                             type.includes('FIN_') ? 'block-end' :
+                             type === 'SI' ? 'block-conditional' : 'block-control';
+            
+            block.classList.add(colorClass);
+            block.dataset.type = type;
+            
+            const deleteBtn = document.createElement('button');
+            deleteBtn.className = 'block-delete';
+            deleteBtn.textContent = '×';
+            deleteBtn.onclick = () => block.remove();
+            
+            switch(type) {
+                case 'AVANZAR':
+                    block.innerHTML = '⬆️ AVANZAR <input type="number" class="block-input" value="1" min="1" max="20">';
+                    break;
+                case 'RETROCEDER':
+                    block.innerHTML = '⬇️ RETROCEDER <input type="number" class="block-input" value="1" min="1" max="20">';
+                    break;
+                case 'GIRAR_DERECHA':
+                    block.innerHTML = '↪️ GIRAR → <input type="number" class="block-input" value="1" min="1" max="4"> veces';
+                    break;
+                case 'GIRAR_IZQUIERDA':
+                    block.innerHTML = '↩️ GIRAR ← <input type="number" class="block-input" value="1" min="1" max="4"> veces';
+                    break;
+                case 'PINTAR':
+                    block.innerHTML = '🎨 PINTAR <select class="block-select"><option value="red">Rojo</option><option value="blue">Azul</option><option value="green">Verde</option><option value="yellow">Amarillo</option><option value="purple">Púrpura</option><option value="orange">Naranja</option></select>';
+                    break;
+                case 'NO_PINTAR':
+                    block.innerHTML = '🚫 NO PINTAR';
+                    break;
+                case 'REPETIR':
+                    block.innerHTML = '🔁 REPETIR <input type="number" class="block-input" value="2" min="1" max="20"> veces';
+                    break;
+                case 'FIN_REPETIR':
+                    block.innerHTML = '🔚 FIN REPETIR';
+                    break;
+                case 'SI':
+                    block.innerHTML = `
+                        ❓ SI 
+                        <select class="block-select">
+                            <option value="HAY_MURO">Hay muro adelante</option>
+                            <option value="NO_HAY_MURO">No hay muro adelante</option>
+                            <option value="EN_META">Estoy en la meta</option>
+                            <option value="NO_EN_META">No estoy en la meta</option>
+                        </select>
+                    `;
+                    break;
+                case 'FIN_SI':
+                    block.innerHTML = '🔚 FIN SI';
+                    break;
+            }
+            
+            block.appendChild(deleteBtn);
+            workspace.appendChild(block);
+            
+            block.addEventListener('dragstart', (e) => {
+                e.dataTransfer.effectAllowed = 'move';
+                e.dataTransfer.setData('text/html', e.target.innerHTML);
+                e.target.style.opacity = '0.5';
+            });
+            
+            block.addEventListener('dragend', (e) => {
+                e.target.style.opacity = '1';
+            });
+            
+            return block;
+        }
+        
+        function buildFlatProgram() {
+            const blocks = Array.from(workspace.children).filter(el => 
+                el.classList.contains('block-assembled')
+            );
+            
+            const flat = [];
+            let indentLevel = 0;
+            
+            blocks.forEach(block => block.classList.remove('indent-1', 'indent-2', 'indent-3'));
+            
+            for (let i = 0; i < blocks.length; i++) {
+                const block = blocks[i];
+                const type = block.dataset.type;
+                
+                if (type === 'FIN_REPETIR' || type === 'FIN_SI') {
+                    indentLevel = Math.max(0, indentLevel - 1);
+                }
+                
+                if (indentLevel > 0) {
+                    block.classList.add(`indent-${Math.min(indentLevel, 3)}`);
+                }
+                
+                const instruction = {
+                    block: block,
+                    type: type,
+                    indent: indentLevel,
+                    index: i
+                };
+                
+                if (type === 'AVANZAR' || type === 'RETROCEDER') {
+                    instruction.steps = parseInt(block.querySelector('.block-input').value);
+                } else if (type === 'REPETIR') {
+                    instruction.times = parseInt(block.querySelector('.block-input').value);
+                } else if (type === 'SI') {
+                    instruction.condition = block.querySelector('.block-select').value;
+                } else if (type === 'PINTAR') {
+                    instruction.color = block.querySelector('.block-select').value;
+                }
+                
+                flat.push(instruction);
+                
+                if (type === 'REPETIR' || type === 'SI') {
+                    indentLevel++;
+                }
+            }
+            
+            return flat;
+        }
+        
+        async function runProgram() {
+            if (state.running) return;
+            
+            state.running = true;
+            state.stepMode = false;
+            state.isPainting = false;
+            
+            const speed = 11 - parseInt(document.getElementById('speedSlider').value);
+            const delay = speed * 100;
+            
+            log('▶️ Ejecutando programa...');
+            
+            try {
+                state.flatProgram = buildFlatProgram();
+                await executeProgram(delay);
+                
+                log('✅ Programa finalizado');
+                
+                if (state.currentChallenge) {
+                    checkChallengeCompletion();
+                }
+            } catch (error) {
+                log('❌ Error: ' + error.message);
+            }
+            
+            state.running = false;
+            state.flatProgram.forEach(inst => inst.block.classList.remove('executing'));
+        }
+        
+        async function executeProgram(delay) {
+            let i = 0;
+            
+            while (i < state.flatProgram.length && state.running) {
+                const instruction = state.flatProgram[i];
+                
+                state.flatProgram.forEach(inst => inst.block.classList.remove('executing'));
+                instruction.block.classList.add('executing');
+                
+                await sleep(delay);
+                
+                const result = await executeInstruction(instruction, delay);
+                
+                if (result && result.jump !== undefined) {
+                    i = result.jump;
+                } else {
+                    i++;
+                }
+            }
+        }
+        
+        function stepProgram() {
+            if (state.running) return;
+            
+            state.stepMode = true;
+            state.stepIndex = 0;
+            state.running = true;
+            state.isPainting = false;
+            
+            state.flatProgram = buildFlatProgram();
+            
+            document.getElementById('nextStepBtn').disabled = false;
+            log('⏯️ Modo paso a paso activado');
+            
+            if (state.flatProgram.length > 0) {
+                state.flatProgram[0].block.classList.add('executing');
+            }
+        }
+        
+        async function nextStep() {
+            if (!state.stepMode || state.stepIndex >= state.flatProgram.length) {
+                state.running = false;
+                state.stepMode = false;
+                document.getElementById('nextStepBtn').disabled = true;
+                state.flatProgram.forEach(inst => inst.block.classList.remove('executing'));
+                log('✅ Programa finalizado');
+                
+                if (state.currentChallenge) {
+                    checkChallengeCompletion();
+                }
+                return;
+            }
+            
+            const instruction = state.flatProgram[state.stepIndex];
+            
+            try {
+                const result = await executeInstruction(instruction, 0);
+                
+                state.flatProgram.forEach(inst => inst.block.classList.remove('executing'));
+                
+                if (result && result.jump !== undefined) {
+                    state.stepIndex = result.jump;
+                } else {
+                    state.stepIndex++;
+                }
+                
+                if (state.stepIndex < state.flatProgram.length) {
+                    state.flatProgram[state.stepIndex].block.classList.add('executing');
+                }
+            } catch (error) {
+                log('❌ Error: ' + error.message);
+                state.running = false;
+                state.stepMode = false;
+                document.getElementById('nextStepBtn').disabled = true;
+                state.flatProgram.forEach(inst => inst.block.classList.remove('executing'));
+            }
+        }
+        
+        async function executeInstruction(instruction, delay) {
+            const type = instruction.type;
+            
+            switch(type) {
+                case 'AVANZAR': {
+                    for (let i = 0; i < instruction.steps; i++) {
+                        await moveForward();
+                        if (state.isPainting) {
+                            robot.trail.set(`${robot.x},${robot.y}`, state.paintColor);
+                        }
+                        redrawAll();
+                        await sleep(delay);
+                    }
+                    break;
+                }
+                case 'RETROCEDER': {
+                    for (let i = 0; i < instruction.steps; i++) {
+                        await moveBackward();
+                        if (state.isPainting) {
+                            robot.trail.set(`${robot.x},${robot.y}`, state.paintColor);
+                        }
+                        redrawAll();
+                        await sleep(delay);
+                    }
+                    break;
+                }
+                case 'GIRAR_DERECHA': {
+                    const times = parseInt(instruction.block.querySelector('.block-input')?.value || 1);
+                    robot.direction = (robot.direction + times) % 4;
+                    redrawAll();
+                    break;
+                }
+                case 'GIRAR_IZQUIERDA': {
+                    const times = parseInt(instruction.block.querySelector('.block-input')?.value || 1);
+                    robot.direction = (robot.direction + 4 - (times % 4)) % 4;
+                    redrawAll();
+                    break;
+                }
+                case 'PINTAR':
+                    state.isPainting = true;
+                    state.paintColor = instruction.color;
+                    robot.trail.set(`${robot.x},${robot.y}`, instruction.color);
+                    redrawAll();
+                    log(`🎨 Pintura activada (${instruction.color})`);
+                    break;
+                case 'NO_PINTAR':
+                    state.isPainting = false;
+                    log('🚫 Pintura desactivada');
+                    break;
+                case 'REPETIR': {
+                    const finIndex = findMatchingEnd(instruction.index, 'FIN_REPETIR');
+                    if (finIndex === -1) {
+                        throw new Error('REPETIR sin FIN_REPETIR');
+                    }
+                    
+                    if (!instruction.loopCount) {
+                        instruction.loopCount = 0;
+                    }
+                    
+                    instruction.loopCount++;
+                    
+                    if (instruction.loopCount > instruction.times) {
+                        instruction.loopCount = 0;
+                        return {jump: finIndex + 1};
+                    }
+                    break;
+                }
+                case 'FIN_REPETIR': {
+                    const repetirIndex = findMatchingStart(instruction.index, 'REPETIR');
+                    if (repetirIndex !== -1) {
+                        return {jump: repetirIndex};
+                    }
+                    break;
+                }
+                case 'SI': {
+                    const conditionMet = evaluateCondition(instruction.condition);
+                    
+                    if (!conditionMet) {
+                        const finIndex = findMatchingEnd(instruction.index, 'FIN_SI');
+                        if (finIndex !== -1) {
+                            return {jump: finIndex + 1};
+                        }
+                    }
+                    break;
+                }
+                case 'FIN_SI':
+                    break;
+            }
+            
+            return null;
+        }
+        
+        function findMatchingEnd(startIndex, endType) {
+            const startType = state.flatProgram[startIndex].type;
+            let depth = 1;
+            
+            for (let i = startIndex + 1; i < state.flatProgram.length; i++) {
+                const type = state.flatProgram[i].type;
+                
+                if (type === startType) {
+                    depth++;
+                } else if (type === endType) {
+                    depth--;
+                    if (depth === 0) {
+                        return i;
+                    }
+                }
+            }
+            
+            return -1;
+        }
+        
+        function findMatchingStart(endIndex, startType) {
+            const endType = state.flatProgram[endIndex].type;
+            let depth = 1;
+            
+            for (let i = endIndex - 1; i >= 0; i--) {
+                const type = state.flatProgram[i].type;
+                
+                if (type === endType) {
+                    depth++;
+                } else if (type === startType) {
+                    depth--;
+                    if (depth === 0) {
+                        return i;
+                    }
+                }
+            }
+            
+            return -1;
+        }
+        
+        function evaluateCondition(condition) {
+            switch(condition) {
+                case 'HAY_MURO': {
+                    const [nextX, nextY] = getNextPosition();
+                    return robot.walls.has(`${nextX},${nextY}`) || 
+                           nextX < 0 || nextX >= robot.gridWidth || 
+                           nextY < 0 || nextY >= robot.gridHeight;
+                }
+                case 'NO_HAY_MURO': {
+                    const [nextX, nextY] = getNextPosition();
+                    return !robot.walls.has(`${nextX},${nextY}`) && 
+                           nextX >= 0 && nextX < robot.gridWidth && 
+                           nextY >= 0 && nextY < robot.gridHeight;
+                }
+                case 'EN_META':
+                    return robot.goalPoint && 
+                           robot.x === robot.goalPoint.x && 
+                           robot.y === robot.goalPoint.y;
+                case 'NO_EN_META':
+                    return !robot.goalPoint || 
+                           robot.x !== robot.goalPoint.x || 
+                           robot.y !== robot.goalPoint.y;
+                default:
+                    return false;
+            }
+        }
+        
+        function getNextPosition() {
+            const directions = [[0, -1], [1, 0], [0, 1], [-1, 0]];
+            const [dx, dy] = directions[robot.direction];
+            return [robot.x + dx, robot.y + dy];
+        }
+        
+        async function moveForward() {
+            const [nextX, nextY] = getNextPosition();
+            
+            if (nextX < 0 || nextX >= robot.gridWidth || nextY < 0 || nextY >= robot.gridHeight) {
+                throw new Error('Fuera del mapa');
+            }
+            
+            if (robot.walls.has(`${nextX},${nextY}`)) {
+                throw new Error('¡Chocó con un muro!');
+            }
+            
+            robot.x = nextX;
+            robot.y = nextY;
+        }
+        
+        async function moveBackward() {
+            const directions = [[0, -1], [1, 0], [0, 1], [-1, 0]];
+            const [dx, dy] = directions[robot.direction];
+            const nextX = robot.x - dx;
+            const nextY = robot.y - dy;
+            
+            if (nextX < 0 || nextX >= robot.gridWidth || nextY < 0 || nextY >= robot.gridHeight) {
+                throw new Error('Fuera del mapa');
+            }
+            
+            if (robot.walls.has(`${nextX},${nextY}`)) {
+                throw new Error('¡Chocó con un muro!');
+            }
+            
+            robot.x = nextX;
+            robot.y = nextY;
+        }
+        
+        function sleep(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+        
+        function resetRobot() {
+            robot.x = robot.startPoint.x;
+            robot.y = robot.startPoint.y;
+            robot.direction = 0;
+            robot.trail.clear();
+            state.running = false;
+            state.stepMode = false;
+            state.stepIndex = 0;
+            state.isPainting = false;
+            document.getElementById('nextStepBtn').disabled = true;
+            
+            const blocks = Array.from(workspace.children).filter(el => 
+                el.classList.contains('block-assembled')
+            );
+            blocks.forEach(block => {
+                block.classList.remove('executing');
+                if (block.dataset.type === 'REPETIR') {
+                    const instruction = state.flatProgram.find(inst => inst.block === block);
+                    if (instruction) instruction.loopCount = 0;
+                }
+            });
+            
+            redrawAll();
+            log('🔄 Robot reiniciado');
+        }
+        
+        function clearProgram() {
+            if (confirm('¿Borrar todos los bloques?')) {
+                workspace.innerHTML = '<div class="assembly-title">📝 MI PROGRAMA</div>';
+                log('🗑 Programa limpiado');
+            }
+        }
+        
+        function toggleConstruction() {
+            state.constructionMode = !state.constructionMode;
+            const tools = document.getElementById('constructionTools');
+            tools.style.display = state.constructionMode ? 'flex' : 'none';
+            log(state.constructionMode ? '🏗️ Modo construcción ON' : '🏗️ Modo construcción OFF');
+        }
+        
+        function setTool(tool) {
+            state.currentTool = tool;
+            document.querySelectorAll('.tool-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+        }
+        
+        function clearMap() {
+            if (confirm('¿Borrar todos los muros?')) {
+                robot.walls.clear();
+                redrawAll();
+                log('🗑 Mapa limpiado');
+            }
+        }
+        
+        function saveProject() {
+            const project = {
+                blocks: workspace.innerHTML,
+                walls: Array.from(robot.walls.entries()),
+                startPoint: robot.startPoint,
+                goalPoint: robot.goalPoint,
+                robotPosition: {x: robot.x, y: robot.y, direction: robot.direction}
+            };
+            
+            const blob = new Blob([JSON.stringify(project, null, 2)], {type: 'application/json'});
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `robot-${Date.now()}.json`;
+            link.click();
+            URL.revokeObjectURL(url);
+            
+            log('💾 Proyecto guardado');
+        }
+        
+        function loadProject(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    const project = JSON.parse(e.target.result);
+                    workspace.innerHTML = project.blocks;
+                    robot.walls.clear();
+                    if (project.walls) {
+                        project.walls.forEach(([key, color]) => robot.walls.set(key, color));
+                    }
+                    if (project.startPoint) {
+                        robot.startPoint = project.startPoint;
+                        robot.x = project.startPoint.x;
+                        robot.y = project.startPoint.y;
+                    }
+                    if (project.goalPoint) robot.goalPoint = project.goalPoint;
+                    if (project.robotPosition) robot.direction = project.robotPosition.direction || 0;
+                    redrawAll();
+                    log('📂 Proyecto cargado');
+                } catch (error) {
+                    log('❌ Error al cargar');
+                }
+            };
+            reader.readAsText(file);
+        }
+        
+        function loadMap(select) {
+            const mapId = select.value;
+            if (!mapId) return;
+            
+            const maps = {
+                map1: {
+                    name: "Línea Recta",
+                    walls: [],
+                    start: {x: 2, y: 7},
+                    goal: {x: 22, y: 7}
+                },
+                map2: {
+                    name: "Esquina Simple",
+                    walls: ["12,5", "12,6", "12,7", "12,8", "12,9"],
+                    start: {x: 5, y: 7},
+                    goal: {x: 20, y: 7}
+                },
+                map3: {
+                    name: "Zigzag",
+                    walls: ["8,9", "8,8", "8,7", "17,7", "17,6", "17,5"],
+                    start: {x: 3, y: 10},
+                    goal: {x: 22, y: 4}
+                },
+                map4: {
+                    name: "Corredor",
+                    walls: [
+                        "10,5", "10,6", "10,7", "10,8", "10,9", "10,10",
+                        "15,5", "15,6", "15,7", "15,8", "15,9", "15,10"
+                    ],
+                    start: {x: 12, y: 4},
+                    goal: {x: 12, y: 11}
+                },
+                map5: {
+                    name: "L Simple",
+                    walls: ["12,6", "12,7", "12,8", "12,9", "13,9", "14,9"],
+                    start: {x: 8, y: 6},
+                    goal: {x: 18, y: 9}
+                }
+            };
+            
+            const map = maps[mapId];
+            if (!map) return;
+            
+            robot.walls.clear();
+            robot.trail.clear();
+            workspace.innerHTML = '<div class="assembly-title">📝 MI PROGRAMA</div>';
+            
+            map.walls.forEach(pos => robot.walls.set(pos, '#808080'));
+            robot.startPoint = map.start;
+            robot.x = map.start.x;
+            robot.y = map.start.y;
+            robot.direction = 0;
+            robot.goalPoint = map.goal;
+            
+            redrawAll();
+            log(`🗺️ ${map.name} cargado`);
+            select.selectedIndex = 0;
+        }
+        
+        function loadExample(type) {
+            workspace.innerHTML = '<div class="assembly-title">📝 MI PROGRAMA</div>';
+            if (type === 'cuadrado') {
+                const repetir = addBlock('REPETIR');
+                repetir.querySelector('.block-input').value = 4;
+                const avanzar = addBlock('AVANZAR');
+                avanzar.querySelector('.block-input').value = 3;
+                const girar = addBlock('GIRAR_DERECHA');
+                const finRepetir = addBlock('FIN_REPETIR');
+                log('📚 Ejemplo: Cuadrado');
+            } else if (type === 'linea') {
+                const pintar = addBlock('PINTAR');
+                const avanzar = addBlock('AVANZAR');
+                avanzar.querySelector('.block-input').value = 5;
+                const noPintar = addBlock('NO_PINTAR');
+                log('📚 Ejemplo: Línea');
+            }
+        }
+        
+        const challenges = [
+            {
+                id: 1,
+                name: "Primer Paso",
+                difficulty: "Fácil",
+                description: "Mueve el robot 3 pasos hacia adelante",
+                hint: "Usa el bloque AVANZAR con valor 3",
+                setup: {
+                    walls: [],
+                    start: {x: 12, y: 10},
+                    goal: {x: 12, y: 7}
+                },
+                checkSuccess: () => robot.y === 7
+            },
+            {
+                id: 2,
+                name: "Giro Simple",
+                difficulty: "Fácil",
+                description: "Avanza 2 pasos, gira a la derecha y avanza 2 más",
+                hint: "Usa AVANZAR, GIRAR DERECHA, AVANZAR",
+                setup: {
+                    walls: [],
+                    start: {x: 10, y: 7},
+                    goal: {x: 12, y: 5}
+                },
+                checkSuccess: () => robot.x === 12 && robot.y === 5
+            },
+            {
+                id: 3,
+                name: "Pintor Básico",
+                difficulty: "Fácil",
+                description: "Avanza 3 pasos pintando cada casilla",
+                hint: "PINTAR, AVANZAR 3, NO PINTAR",
+                setup: {
+                    walls: [],
+                    start: {x: 12, y: 7},
+                    goal: null
+                },
+                checkSuccess: () => robot.trail.size >= 4
+            },
+            {
+                id: 4,
+                name: "Cuadrado Simple",
+                difficulty: "Fácil",
+                description: "Dibuja un cuadrado de 3x3",
+                hint: "REPETIR 4: AVANZAR 3, GIRAR DERECHA, FIN REPETIR",
+                setup: {
+                    walls: [],
+                    start: {x: 12, y: 7},
+                    goal: null
+                },
+                checkSuccess: () => robot.x === 12 && robot.y === 7 && robot.direction === 0
+            },
+            {
+                id: 5,
+                name: "Esquivar Obstáculo",
+                difficulty: "Fácil",
+                description: "Llega a la meta esquivando el muro",
+                hint: "Rodea el muro por la derecha",
+                setup: {
+                    walls: ["12,6"],
+                    start: {x: 12, y: 8},
+                    goal: {x: 12, y: 4}
+                },
+                checkSuccess: () => robot.x === 12 && robot.y === 4
+            },
+            {
+                id: 6,
+                name: "L Invertida",
+                difficulty: "Fácil",
+                description: "Dibuja una L invertida avanzando y girando",
+                hint: "Avanza, gira izquierda, avanza",
+                setup: {
+                    walls: [],
+                    start: {x: 15, y: 10},
+                    goal: {x: 10, y: 7}
+                },
+                checkSuccess: () => robot.x === 10 && robot.y === 7
+            },
+            {
+                id: 7,
+                name: "Línea de Colores",
+                difficulty: "Fácil",
+                description: "Pinta una línea de 5 casillas",
+                hint: "PINTAR, AVANZAR 5, NO PINTAR",
+                setup: {
+                    walls: [],
+                    start: {x: 10, y: 7},
+                    goal: null
+                },
+                checkSuccess: () => robot.trail.size >= 5
+            },
+            {
+                id: 8,
+                name: "Laberinto en U",
+                difficulty: "Medio",
+                description: "Navega el laberinto en forma de U hasta la meta",
+                hint: "Sigue el camino: adelante, derecha, adelante, derecha, adelante",
+                setup: {
+                    walls: ["11,5", "11,6", "11,7", "11,8", "11,9", "13,5", "13,6", "13,7", "13,8", "13,9"],
+                    start: {x: 12, y: 10},
+                    goal: {x: 12, y: 4}
+                },
+                checkSuccess: () => robot.x === 12 && robot.y === 4
+            },
+            {
+                id: 9,
+                name: "Rectángulo Perfecto",
+                difficulty: "Medio",
+                description: "Dibuja un rectángulo de 5x3",
+                hint: "Repite: avanza 5, gira, avanza 3, gira",
+                setup: {
+                    walls: [],
+                    start: {x: 10, y: 6},
+                    goal: null
+                },
+                checkSuccess: () => robot.x === 10 && robot.y === 6 && robot.direction === 0
+            },
+            {
+                id: 10,
+                name: "Condicional Básico",
+                difficulty: "Medio",
+                description: "Usa SI para avanzar solo cuando no hay muro",
+                hint: "REPETIR 10: SI NO_HAY_MURO: AVANZAR, FIN SI, FIN REPETIR",
+                setup: {
+                    walls: ["12,6", "12,4"],
+                    start: {x: 12, y: 8},
+                    goal: {x: 12, y: 3}
+                },
+                checkSuccess: () => robot.y <= 3
+            },
+            {
+                id: 11,
+                name: "Escalera",
+                difficulty: "Medio",
+                description: "Crea una escalera",
+                hint: "REPETIR: PINTAR, AVANZAR, GIRAR DERECHA, AVANZAR, GIRAR IZQUIERDA",
+                setup: {
+                    walls: [],
+                    start: {x: 8, y: 10},
+                    goal: null
+                },
+                checkSuccess: () => robot.trail.size >= 3 && robot.x > 8
+            },
+            {
+                id: 12,
+                name: "Zigzag Complejo",
+                difficulty: "Medio",
+                description: "Navega el zigzag hasta la meta",
+                hint: "Alterna avances y giros estratégicamente",
+                setup: {
+                    walls: ["8,9", "8,8", "8,7", "17,7", "17,6", "17,5"],
+                    start: {x: 5, y: 10},
+                    goal: {x: 20, y: 4}
+                },
+                checkSuccess: () => robot.x === 20 && robot.y === 4
+            },
+            {
+                id: 13,
+                name: "Patrón de Cruz",
+                difficulty: "Medio",
+                description: "Dibuja una cruz pintando desde el centro",
+                hint: "Avanza y pinta en 4 direcciones desde el centro",
+                setup: {
+                    walls: [],
+                    start: {x: 12, y: 7},
+                    goal: null
+                },
+                checkSuccess: () => robot.trail.size >= 8
+            },
+            {
+                id: 14,
+                name: "Detector de Meta",
+                difficulty: "Medio",
+                description: "Usa SI EN_META para pintar solo en la meta",
+                hint: "Avanza hasta meta, SI EN_META: PINTAR, FIN SI",
+                setup: {
+                    walls: [],
+                    start: {x: 12, y: 10},
+                    goal: {x: 12, y: 5}
+                },
+                checkSuccess: () => robot.x === 12 && robot.y === 5 && robot.trail.has('12,5')
+            },
+            {
+                id: 15,
+                name: "Laberinto Complejo",
+                difficulty: "Difícil",
+                description: "Navega este laberinto complejo hasta la meta",
+                hint: "Planea tu ruta con cuidado",
+                setup: {
+                    walls: [
+                        "8,5", "8,6", "8,7", "8,8", "8,9",
+                        "11,5", "11,7", "11,9",
+                        "14,5", "14,7", "14,9",
+                        "17,5", "17,6", "17,7", "17,8", "17,9"
+                    ],
+                    start: {x: 5, y: 7},
+                    goal: {x: 20, y: 7}
+                },
+                checkSuccess: () => robot.x === 20 && robot.y === 7
+            },
+            {
+                id: 16,
+                name: "Espiral Creativa",
+                difficulty: "Difícil",
+                description: "Dibuja una espiral usando repeticiones",
+                hint: "Incrementa pasos en cada vuelta",
+                setup: {
+                    walls: [],
+                    start: {x: 12, y: 7},
+                    goal: null
+                },
+                checkSuccess: () => robot.trail.size >= 12
+            },
+            {
+                id: 17,
+                name: "Condicional Avanzado",
+                difficulty: "Difícil",
+                description: "Usa SI HAY_MURO para decidir girar o avanzar",
+                hint: "REPETIR 20: SI HAY_MURO: GIRAR, FIN SI, AVANZAR, FIN REPETIR",
+                setup: {
+                    walls: ["12,6", "13,7", "12,8", "11,7"],
+                    start: {x: 12, y: 7},
+                    goal: {x: 15, y: 7}
+                },
+                checkSuccess: () => robot.x === 15 && robot.y === 7
+            },
+            {
+                id: 18,
+                name: "Patrón Damero",
+                difficulty: "Difícil",
+                description: "Crea un patrón de damero 4x4",
+                hint: "Combina repeticiones y giros con pintura",
+                setup: {
+                    walls: [],
+                    start: {x: 10, y: 5},
+                    goal: null
+                },
+                checkSuccess: () => robot.trail.size >= 8
+            },
+            {
+                id: 19,
+                name: "Búsqueda Inteligente",
+                difficulty: "Difícil",
+                description: "Encuentra la meta usando condiciones",
+                hint: "REPETIR 50: SI NO_EN_META: AVANZAR, FIN SI, FIN REPETIR",
+                setup: {
+                    walls: ["10,7", "11,7", "13,7", "14,7"],
+                    start: {x: 12, y: 7},
+                    goal: {x: 12, y: 10}
+                },
+                checkSuccess: () => robot.x === 12 && robot.y === 10
+            },
+            {
+                id: 20,
+                name: "Desafío Maestro",
+                difficulty: "Difícil",
+                description: "Navega el laberinto y pinta el camino",
+                hint: "Combina condicionales, repeticiones y pintura",
+                setup: {
+                    walls: [
+                        "6,5", "6,6", "6,7", "6,8", "6,9",
+                        "9,5", "9,7", "9,8", "9,9",
+                        "12,5", "12,6", "12,7", "12,9",
+                        "15,5", "15,6", "15,8", "15,9",
+                        "18,5", "18,6", "18,7", "18,8", "18,9"
+                    ],
+                    start: {x: 4, y: 7},
+                    goal: {x: 20, y: 7}
+                },
+                checkSuccess: () => robot.x === 20 && robot.y === 7
+            }
+        ];
+        
+        function openChallengesModal() {
+            const modal = document.getElementById('challengesModal');
+            const grid = document.getElementById('challengesGrid');
+            
+            grid.innerHTML = '';
+            
+            challenges.forEach(challenge => {
+                const card = document.createElement('div');
+                card.className = 'challenge-card';
+                if (state.completedChallenges.has(challenge.id)) {
+                    card.classList.add('completed');
+                }
+                
+                card.innerHTML = `
+                    <h3>Reto ${challenge.id}: ${challenge.name}</h3>
+                    <p>${challenge.description}</p>
+                    <span class="challenge-difficulty">${challenge.difficulty}</span>
+                `;
+                
+                card.onclick = () => loadChallenge(challenge);
+                grid.appendChild(card);
+            });
+            
+            modal.style.display = 'block';
+        }
+        
+        function closeChallengesModal() {
+            document.getElementById('challengesModal').style.display = 'none';
+        }
+        
+        function loadChallenge(challenge) {
+            closeChallengesModal();
+            
+            state.currentChallenge = challenge;
+            
+            workspace.innerHTML = '<div class="assembly-title">📝 MI PROGRAMA</div>';
+            
+            robot.walls.clear();
+            robot.trail.clear();
+            
+            challenge.setup.walls.forEach(pos => robot.walls.set(pos, '#808080'));
+            robot.startPoint = challenge.setup.start;
+            robot.x = challenge.setup.start.x;
+            robot.y = challenge.setup.start.y;
+            robot.direction = 0;
+            robot.goalPoint = challenge.setup.goal;
+            
+            redrawAll();
+            
+            log(`🎯 Reto ${challenge.id}: ${challenge.name}`);
+            log(`📝 ${challenge.description}`);
+            log(`💡 Pista: ${challenge.hint}`);
+        }
+        
+        function checkChallengeCompletion() {
+            if (!state.currentChallenge) return;
+            
+            if (state.currentChallenge.checkSuccess()) {
+                state.completedChallenges.add(state.currentChallenge.id);
+                log(`🎉 ¡Reto ${state.currentChallenge.id} completado!`);
+                
+                localStorage.setItem('completedChallenges', 
+                    JSON.stringify(Array.from(state.completedChallenges)));
+                
+                setTimeout(() => {
+                    if (confirm(`¡Felicidades! ¿Quieres intentar el siguiente reto?`)) {
+                        const nextChallenge = challenges.find(c => 
+                            c.id === state.currentChallenge.id + 1
+                        );
+                        if (nextChallenge) {
+                            loadChallenge(nextChallenge);
+                        } else {
+                            alert('¡Has completado todos los retos! 🏆');
+                        }
+                    }
+                }, 500);
+            } else {
+                log('❌ Aún no has completado el objetivo del reto');
+            }
+        }
+        
+        function setupCanvasEvents() {
+            robot.canvas.addEventListener('mousedown', (e) => {
+                const rect = robot.canvas.getBoundingClientRect();
+                const x = (e.clientX - rect.left) * (robot.canvas.width / rect.width);
+                const y = (e.clientY - rect.top) * (robot.canvas.height / rect.height);
+                const gridX = Math.floor(x / robot.cellSize);
+                const gridY = Math.floor(y / robot.cellSize);
+                
+                if (state.constructionMode) {
+                    handleConstruction(gridX, gridY);
+                } else if (gridX === robot.x && gridY === robot.y) {
+                    state.draggingRobot = true;
+                }
+            });
+            
+            robot.canvas.addEventListener('mousemove', (e) => {
+                if (!state.draggingRobot && !state.constructionMode) return;
+                
+                const rect = robot.canvas.getBoundingClientRect();
+                const x = (e.clientX - rect.left) * (robot.canvas.width / rect.width);
+                const y = (e.clientY - rect.top) * (robot.canvas.height / rect.height);
+                const gridX = Math.floor(x / robot.cellSize);
+                const gridY = Math.floor(y / robot.cellSize);
+                
+                if (state.constructionMode && e.buttons === 1) {
+                    handleConstruction(gridX, gridY);
+                } else if (state.draggingRobot) {
+                    if (gridX >= 0 && gridX < robot.gridWidth && gridY >= 0 && gridY < robot.gridHeight && 
+                        !robot.walls.has(`${gridX},${gridY}`)) {
+                        robot.x = gridX;
+                        robot.y = gridY;
+                        robot.startPoint = {x: gridX, y: gridY};
+                        redrawAll();
+                    }
+                }
+            });
+            
+            robot.canvas.addEventListener('mouseup', () => {
+                if (state.draggingRobot) {
+                    state.draggingRobot = false;
+                    log(`📍 Inicio: (${robot.x}, ${robot.y})`);
+                }
+            });
+        }
+        
+        function handleConstruction(gridX, gridY) {
+            if (gridX < 0 || gridX >= robot.gridWidth || gridY < 0 || gridY >= robot.gridHeight) return;
+            
+            const key = `${gridX},${gridY}`;
+            
+            if (state.currentTool === 'wall') {
+                robot.walls.set(key, '#808080');
+            } else if (state.currentTool === 'erase') {
+                robot.walls.delete(key);
+            } else if (state.currentTool === 'start') {
+                robot.startPoint = {x: gridX, y: gridY};
+                robot.x = gridX;
+                robot.y = gridY;
+                log(`📍 Inicio: (${gridX}, ${gridY})`);
+            } else if (state.currentTool === 'goal') {
+                robot.goalPoint = {x: gridX, y: gridY};
+                log(`🎯 Meta: (${gridX}, ${gridY})`);
+            }
+            
+            redrawAll();
+        }
+        
+        function log(message) {
+            const console = document.getElementById('console');
+            const line = document.createElement('div');
+            line.className = 'console-line';
+            line.textContent = message;
+            console.appendChild(line);
+            console.scrollTop = console.scrollHeight;
+        }
+        
+        document.getElementById('speedSlider').addEventListener('input', (e) => {
+            document.getElementById('speedValue').textContent = e.target.value;
+        });
+        
+        window.onclick = function(event) {
+            const modal = document.getElementById('challengesModal');
+            if (event.target == modal) {
+                closeChallengesModal();
+            }
+        }
+        
+        function loadCompletedChallenges() {
+            const saved = localStorage.getItem('completedChallenges');
+            if (saved) {
+                state.completedChallenges = new Set(JSON.parse(saved));
+            }
+        }
+        
+        window.addEventListener('load', () => {
+            initCanvas();
+            setupCanvasEvents();
+            loadCompletedChallenges();
+            log('🤖 Robot listo');
+            log('🧩 Arrastra bloques al área de programa');
+            log('🎯 Prueba los 20 retos de programación');
+            log('⏯️ Usa modo paso a paso para depurar');
+            log('✨ Designed by Hansel Peña Diaz - V3');
+        });
+    </script>
+</body>
+</html>
