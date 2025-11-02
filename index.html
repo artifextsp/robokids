@@ -226,8 +226,9 @@
             background: #fafafa;
             overflow-y: auto;
             overflow-x: hidden;
-            padding: 12px;
+            padding: 12px 12px 80px 12px;
             border-left: 2px solid #ddd;
+            min-height: 0;
         }
         
         .assembly-area::-webkit-scrollbar {
@@ -340,6 +341,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            flex-shrink: 0;
         }
         
         .console-line {
@@ -446,6 +448,8 @@
             font-size: 0.75em;
             margin-top: 8px;
             background: rgba(255,255,255,0.2);
+        }
+        
         .message-overlay {
             display: none;
             position: fixed;
@@ -474,7 +478,6 @@
         @keyframes popIn {
             0% { transform: translate(-50%, -50%) scale(0); }
             100% { transform: translate(-50%, -50%) scale(1); }
-        }
         }
 
         .challenge-info {
@@ -646,12 +649,12 @@
 
     <script>
         const PASTEL_COLORS = {
-            red: '#FFB3BA',      // Rosa pastel
-            blue: '#BAE1FF',     // Azul pastel
-            green: '#BAFFC9',    // Verde pastel
-            yellow: '#FFFFBA',   // Amarillo pastel
-            purple: '#E0BBE4',   // Púrpura pastel
-            orange: '#FFD8B8'    // Naranja pastel
+            red: '#FFB3BA',
+            blue: '#BAE1FF',
+            green: '#BAFFC9',
+            yellow: '#FFFFBA',
+            purple: '#E0BBE4',
+            orange: '#FFD8B8'
         };
 
         const state = {
@@ -808,6 +811,10 @@
             e.preventDefault();
             const blockType = e.dataTransfer.getData('blockType');
             addBlock(blockType);
+            
+            setTimeout(() => {
+                workspace.scrollTop = workspace.scrollHeight;
+            }, 100);
         });
         
         function addBlock(type) {
